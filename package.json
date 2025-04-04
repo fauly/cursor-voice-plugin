@@ -1,0 +1,44 @@
+{
+  "name": "cursor-voice-plugin",
+  "displayName": "Cursor Voice Plugin",
+  "description": "Enable voice interaction with Cursor AI",
+  "version": "0.0.1",
+  "engines": {
+    "cursor": "^1.0.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:cursor-voice-plugin.startVoiceChat"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "cursor-voice-plugin.startVoiceChat",
+        "title": "Start Voice Chat"
+      },
+      {
+        "command": "cursor-voice-plugin.stopVoiceChat",
+        "title": "Stop Voice Chat"
+      }
+    ]
+  },
+  "scripts": {
+    "build": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^16.11.7",
+    "@types/vscode": "^1.70.0",
+    "@typescript-eslint/eslint-plugin": "^5.30.0",
+    "@typescript-eslint/parser": "^5.30.0",
+    "eslint": "^8.18.0",
+    "typescript": "^4.7.4",
+    "vsce": "^2.9.2"
+  },
+  "dependencies": {}
+} 

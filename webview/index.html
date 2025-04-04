@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Chat Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .status {
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #e6f7ff;
+        }
+        .transcript {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            min-height: 100px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .status.listening {
+            background-color: #fff1f0;
+        }
+        button {
+            padding: 8px 16px;
+            margin-right: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            background-color: #f5f5f5;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Voice Chat Test</h1>
+    <div>
+        <button id="startBtn">Start Listening</button>
+        <button id="stopBtn">Stop Listening</button>
+    </div>
+    <div class="status" id="status">Ready to listen</div>
+    <div class="transcript" id="transcript"></div>
+
+    <script>
+        (function() {
+            const statusElement = document.getElementById('status');
+            const transcriptElement = document.getElementById('transcript');
+            const startBtn = document.getElementById('startBtn');
+            const stopBtn = document.getElementById('stopBtn');
+            
+            let recognition = null;
+            let isListening = false;
+
+            // Initialize speech recognition
+            function initSpeechRecognition() {
+                if (!('webkitSpeechRecognition' in window)) {
+                    statusElement.textContent = 'Speech recognition not supported in this browser';
+                    alert('Speech recognition not supported in this browser');
+                    return false;
+                }
+
+                recognition = new webkitSpeechRecognition();
+                recognition.continuous = true;
+                recognition.interimResults = true;
+                recognition.lang = 'en-US';
+
+                recognition.onresult = (event) => {
+                    let interimTranscript = '';
+                    let finalTranscript = '';
+
+                    for (let i = event.resultIndex; i < event.results.length; ++i) {
+                        const transcript = event.results[i][0].transcript;
+                        if (event.results[i].isFinal) {
+                            finalTranscript += transcript;
+                        } else {
+                            interimTranscript += transcript;
+                        }
+                    }
+
+                    if (finalTranscript) {
+                        // Add to transcript display
+                        const messageElement = document.createElement('div');
+                        messageElement.textContent = 'You: ' + finalTranscript;
+                        transcriptElement.appendChild(messageElement);
+                        transcriptElement.scrollTop = transcriptElement.scrollHeight;
+                        
+                        // Mock AI response
+                        setTimeout(() => {
+                            const response = "I heard you say: " + finalTranscript;
+                            speak(response);
+                        }, 1000);
+                    }
+                    
+                    // Show interim results
+                    if (interimTranscript) {
+                        statusElement.textContent = 'Listening: ' + interimTranscript;
+                    }
+                };
+
+                recognition.onerror = (event) => {
+                    statusElement.textContent = 'Error: ' + event.error;
+                };
+
+                return true;
+            }
+
+            // Start listening for speech
+            function startListening() {
+                if (!recognition && !initSpeechRecognition()) {
+                    return;
+                }
+                
+                if (!isListening) {
+                    recognition.start();
+                    isListening = true;
+                    statusElement.textContent = 'Listening...';
+                    statusElement.classList.add('listening');
+                }
+            }
+
+            // Stop listening for speech
+            function stopListening() {
+                if (recognition && isListening) {
+                    recognition.stop();
+                    isListening = false;
+                    statusElement.textContent = 'Stopped listening';
+                    statusElement.classList.remove('listening');
+                }
+            }
+
+            // Text-to-speech functionality
+            function speak(text) {
+                if (!('speechSynthesis' in window)) {
+                    alert('Text-to-speech not supported in this browser');
+                    return;
+                }
+                
+                // Add to transcript display
+                const messageElement = document.createElement('div');
+                messageElement.textContent = 'AI: ' + text;
+                transcriptElement.appendChild(messageElement);
+                transcriptElement.scrollTop = transcriptElement.scrollHeight;
+                
+                // Speak the text
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 1.0;
+                utterance.pitch = 1.0;
+                window.speechSynthesis.speak(utterance);
+            }
+
+            // Initialize
+            startBtn.addEventListener('click', startListening);
+            stopBtn.addEventListener('click', stopListening);
+            initSpeechRecognition();
+        })();
+    </script>
+</body>
+</html> 

@@ -13,12 +13,41 @@ export class CursorAiIntegration {
      */
     public async sendQueryToCursorAi(query: string): Promise<string> {
         try {
-            // This is a placeholder for when Cursor provides an official API
-            // In the future, this might be something like:
-            // const response = await vscode.commands.executeCommand('cursor.ai.query', { text: query });
+            // First, try to use Cursor's AI command if it exists
+            try {
+                // Check if the command exists in Cursor
+                const commands = await vscode.commands.getCommands();
+                
+                // Try to find any Cursor AI related commands
+                const cursorCommands = commands.filter(cmd => 
+                    cmd.startsWith('cursor.') && 
+                    (cmd.includes('ai') || cmd.includes('chat') || cmd.includes('assistant'))
+                );
+                
+                if (cursorCommands.length > 0) {
+                    console.log('Found potential Cursor AI commands:', cursorCommands);
+                    
+                    // Try the most likely command from the found commands
+                    // This is speculative and will need adjustment based on Cursor's actual API
+                    for (const cmd of cursorCommands) {
+                        try {
+                            const response = await vscode.commands.executeCommand(cmd, query);
+                            if (response && typeof response === 'string') {
+                                return response;
+                            }
+                        } catch (cmdError) {
+                            console.log(`Command ${cmd} failed:`, cmdError);
+                            // Continue to the next command
+                        }
+                    }
+                }
+            } catch (err) {
+                console.log('Error checking for Cursor AI commands:', err);
+                // Continue to fallback
+            }
             
-            // For now, we'll simulate a response
-            console.log(`Sending query to Cursor AI: ${query}`);
+            // If direct command integration failed, fall back to simulation
+            console.log(`No working Cursor AI command found. Simulating response for: ${query}`);
             
             // Simulate a delay to mimic AI processing time
             await new Promise(resolve => setTimeout(resolve, 1500));
@@ -45,11 +74,14 @@ export class CursorAiIntegration {
      */
     public async isAiApiAvailable(): Promise<boolean> {
         try {
-            // This is a placeholder for when Cursor provides an official API
-            // In the future, we might check for the existence of certain commands or APIs
+            // Check if any Cursor AI related commands exist
+            const commands = await vscode.commands.getCommands();
+            const cursorAiCommands = commands.filter(cmd => 
+                cmd.startsWith('cursor.') && 
+                (cmd.includes('ai') || cmd.includes('chat') || cmd.includes('assistant'))
+            );
             
-            // For now, assume it's always available for testing
-            return true;
+            return cursorAiCommands.length > 0;
         } catch (error) {
             console.error('Error checking AI API availability:', error);
             return false;

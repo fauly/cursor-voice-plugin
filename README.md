@@ -8,6 +8,24 @@ A plugin for Cursor IDE that enables voice interaction with the built-in AI assi
 - Text-to-speech for AI responses
 - Seamless integration with Cursor's AI assistant
 - User-friendly interface in a webview panel
+- Built-in voice commands for common IDE operations
+- Highly configurable through settings
+
+## Voice Commands
+
+The plugin comes with built-in voice commands for common IDE operations:
+
+- "Open file" - Opens the file dialog
+- "Save" or "Save file" - Saves the current file
+- "Save all files" - Saves all open files
+- "Go to line" - Opens the go to line dialog
+- "Find" - Opens the find dialog
+- "Search" - Opens the search dialog
+- "Undo" - Undoes the last action
+- "Redo" - Redoes the last action
+- "List commands" - Lists all available voice commands
+
+Any other voice input will be sent to the AI assistant for processing.
 
 ## How It Works
 
@@ -15,6 +33,7 @@ This plugin uses:
 1. VSCode/Cursor WebView API to create a browser context inside the IDE
 2. Web Speech API for speech recognition and synthesis
 3. Communication between the extension and the webview for seamless interaction
+4. Integration with Cursor's AI capabilities
 
 ## Setup
 
@@ -23,6 +42,19 @@ This plugin uses:
 3. Run `npm install` to install dependencies
 4. Run `npm run build` to compile the plugin
 5. Copy the compiled plugin to your Cursor extensions folder
+
+## Configuration
+
+The plugin is highly configurable through settings:
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `cursorVoicePlugin.speechRecognition.language` | Language used for speech recognition | `en-US` |
+| `cursorVoicePlugin.speechSynthesis.rate` | Speech rate for text-to-speech (0.1 to 2.0) | `1.0` |
+| `cursorVoicePlugin.speechSynthesis.pitch` | Speech pitch for text-to-speech (0.1 to 2.0) | `1.0` |
+| `cursorVoicePlugin.ui.showStatusMessages` | Show status messages in the VS Code UI | `true` |
+| `cursorVoicePlugin.commands.enabled` | Enable built-in voice commands for IDE operations | `true` |
+| `cursorVoicePlugin.panel.position` | Where to open the voice chat panel (current, beside, active) | `beside` |
 
 ## Testing
 
@@ -88,7 +120,11 @@ npm run build
 - `src/extension.ts` - Main extension entry point
 - `src/webview/voicePanel.ts` - Webview panel implementation
 - `src/aiService.ts` - AI communication service
+- `src/cursorAiIntegration.ts` - Integration with Cursor's AI
+- `src/voiceService.ts` - Voice recognition and synthesis service
+- `src/settingsService.ts` - Configuration and settings handler
 - `webview/index.html` - Standalone test page
+- `webview/styles.css` - Styles for the webview
 
 ## License
 

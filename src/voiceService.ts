@@ -1,14 +1,22 @@
 import * as vscode from 'vscode';
 import { AiService } from './aiService';
 
+// Voice commands mapping
+interface VoiceCommand {
+    execute: () => Promise<void>;
+    description: string;
+}
+
 export class VoiceService {
     private recognition: SpeechRecognition | null = null;
     private synthesis: SpeechSynthesis | null = null;
     private isListening: boolean = false;
     private aiService: AiService;
+    private voiceCommands: Map<RegExp, VoiceCommand> = new Map<RegExp, VoiceCommand>();
 
     constructor() {
         this.aiService = new AiService();
+        this.setupVoiceCommands();
         
         // Check if we're in a browser context
         if (typeof window !== 'undefined' && 'webkitSpeechRecognition' in window) {
@@ -21,6 +29,91 @@ export class VoiceService {
         if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
             this.synthesis = window.speechSynthesis;
         }
+    }
+
+    private setupVoiceCommands() {
+        this.voiceCommands = new Map<RegExp, VoiceCommand>();
+        
+        // File operations
+        this.voiceCommands.set(/^open file$/i, {
+            execute: async () => {
+                await vscode.commands.executeCommand('workbench.action.files.openFile');
+                this.speakResponse('Opening file dialog');
+            },
+            description: 'Opens the file dialog'
+        });
+        
+        this.voiceCommands.set(/^save( file)?$/i, {
+            execute: async () => {
+                await vscode.commands.executeCommand('workbench.action.files.save');
+                this.speakResponse('File saved');
+            },
+            description: 'Saves the current file'
+        });
+        
+        this.voiceCommands.set(/^save all( files)?$/i, {
+            execute: async () => {
+                await vscode.commands.executeCommand('workbench.action.files.saveAll');
+                this.speakResponse('All files saved');
+            },
+            description: 'Saves all open files'
+        });
+        
+        // Navigation
+        this.voiceCommands.set(/^go to line (\d+)$/i, {
+            execute: async () => {
+                await vscode.commands.executeCommand('workbench.action.gotoLine');
+                this.speakResponse('Go to line');
+            },
+            description: 'Opens the go to line dialog'
+        });
+        
+        this.voiceCommands.set(/^find$/i, {
+            execute: async () => {
+                await vscode.commands.executeCommand('actions.find');
+                this.speakResponse('Opening find dialog');
+            },
+            description: 'Opens the find dialog'
+        });
+        
+        this.voiceCommands.set(/^search$/i, {
+            execute: async () => {
+                await vscode.commands.executeCommand('workbench.action.findInFiles');
+                this.speakResponse('Opening search dialog');
+            },
+            description: 'Opens the search dialog'
+        });
+        
+        // Editor operations
+        this.voiceCommands.set(/^undo$/i, {
+            execute: async () => {
+                await vscode.commands.executeCommand('undo');
+                this.speakResponse('Undoing last action');
+            },
+            description: 'Undoes the last action'
+        });
+        
+        this.voiceCommands.set(/^redo$/i, {
+            execute: async () => {
+                await vscode.commands.executeCommand('redo');
+                this.speakResponse('Redoing last action');
+            },
+            description: 'Redoes the last action'
+        });
+        
+        // Help
+        this.voiceCommands.set(/^list commands$/i, {
+            execute: async () => {
+                const commandDescriptions = Array.from(this.voiceCommands.entries())
+                    .map(([pattern, command]) => `"${pattern.source}": ${command.description}`)
+                    .join('\n');
+                
+                vscode.window.showInformationMessage('Available voice commands:');
+                vscode.window.showInformationMessage(commandDescriptions);
+                this.speakResponse('Here are the available voice commands');
+            },
+            description: 'Lists all available voice commands'
+        });
     }
 
     private setupRecognition() {
@@ -42,7 +135,7 @@ export class VoiceService {
             }
 
             if (transcript) {
-                // Send the transcript to the AI
+                // Send the transcript to be processed
                 this.handleUserInput(transcript);
             }
         };
@@ -57,12 +150,32 @@ export class VoiceService {
         console.log(`User said: ${text}`);
         vscode.window.showInformationMessage(`You said: ${text}`);
         
-        // Get AI response
-        const response = await this.aiService.queryAi(text);
+        // Check if the input matches any voice command
+        let commandExecuted = false;
         
-        // Display and speak response
-        vscode.window.showInformationMessage(`AI: ${response}`);
-        this.speakResponse(response);
+        for (const [pattern, command] of this.voiceCommands.entries()) {
+            const match = text.match(pattern);
+            if (match) {
+                try {
+                    await command.execute();
+                    commandExecuted = true;
+                    break;
+                } catch (error) {
+                    console.error(`Error executing command ${pattern}:`, error);
+                    this.speakResponse(`I had trouble executing that command. ${error}`);
+                }
+            }
+        }
+        
+        // If no command was executed, send to AI
+        if (!commandExecuted) {
+            // Get AI response
+            const response = await this.aiService.queryAi(text);
+            
+            // Display and speak response
+            vscode.window.showInformationMessage(`AI: ${response}`);
+            this.speakResponse(response);
+        }
     }
 
     private speakResponse(text: string) {

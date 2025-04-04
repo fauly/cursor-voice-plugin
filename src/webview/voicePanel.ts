@@ -43,10 +43,10 @@ export class VoicePanel {
         );
     }
 
-    public static createOrShow(extensionPath: string) {
-        const column = vscode.window.activeTextEditor
+    public static createOrShow(extensionPath: string, viewColumn?: vscode.ViewColumn) {
+        const column = viewColumn || (vscode.window.activeTextEditor
             ? vscode.window.activeTextEditor.viewColumn
-            : undefined;
+            : undefined);
 
         // If we already have a panel, show it.
         if (VoicePanel.currentPanel) {
@@ -291,5 +291,29 @@ export class VoicePanel {
                 x.dispose();
             }
         }
+    }
+
+    /**
+     * List all available voice commands
+     */
+    public listVoiceCommands() {
+        // Get the list of voice commands from the service
+        // For now, just post a message to the webview
+        this._panel.webview.postMessage({ command: 'listCommands' });
+    }
+
+    /**
+     * Update settings when configuration changes
+     */
+    public updateSettings() {
+        // Send updated settings to the webview
+        this._panel.webview.postMessage({ 
+            command: 'updateSettings',
+            settings: {
+                language: vscode.workspace.getConfiguration('cursorVoicePlugin').get('speechRecognition.language'),
+                rate: vscode.workspace.getConfiguration('cursorVoicePlugin').get('speechSynthesis.rate'),
+                pitch: vscode.workspace.getConfiguration('cursorVoicePlugin').get('speechSynthesis.pitch')
+            } 
+        });
     }
 } 

@@ -22,8 +22,52 @@
       {
         "command": "cursor-voice-plugin.stopVoiceChat",
         "title": "Stop Voice Chat"
+      },
+      {
+        "command": "cursor-voice-plugin.listVoiceCommands",
+        "title": "List Voice Commands"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Cursor Voice Plugin",
+      "properties": {
+        "cursorVoicePlugin.speechRecognition.language": {
+          "type": "string",
+          "default": "en-US",
+          "description": "Language used for speech recognition"
+        },
+        "cursorVoicePlugin.speechSynthesis.rate": {
+          "type": "number",
+          "default": 1.0,
+          "minimum": 0.1,
+          "maximum": 2.0,
+          "description": "Speech rate for text-to-speech (0.1 to 2.0)"
+        },
+        "cursorVoicePlugin.speechSynthesis.pitch": {
+          "type": "number",
+          "default": 1.0,
+          "minimum": 0.1,
+          "maximum": 2.0,
+          "description": "Speech pitch for text-to-speech (0.1 to 2.0)"
+        },
+        "cursorVoicePlugin.ui.showStatusMessages": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show status messages in the VS Code UI"
+        },
+        "cursorVoicePlugin.commands.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable built-in voice commands for IDE operations"
+        },
+        "cursorVoicePlugin.panel.position": {
+          "type": "string",
+          "enum": ["current", "beside", "active"],
+          "default": "beside",
+          "description": "Where to open the voice chat panel"
+        }
+      }
+    }
   },
   "scripts": {
     "build": "tsc -p ./",
